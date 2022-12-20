@@ -1,19 +1,43 @@
-const http = require('http');
-const socketIO = require('socket.io');
+// const app = require('express')();
+// const server = require('http').createServer(app);
+// const io = require('socket.io')(server);
+const port = process.env.PORT || 3000;
+// app.get('/', function(req, res, next) {
+  // console.log(req.headers);
+  // res.sendfile('index.html');
+  // next();
+// });
 
-const server = http.createServer((req, res) => {
-  // Handle HTTP requests here
+const net = require('net');
+
+const serv = new net.Server();
+
+// Receive a response
+serv.on('data', function(data) {
+  console.log('Received: ' + data);
 });
 
-const io = socketIO(server);
-
-io.on('connection', socket => {
-  socket.on('message', data => {
-    console.log('Received message from client:', data);
-    socket.emit('response', { message: 'Hello from the server!' });
-  });
+// Handle errors
+serv.on('error', function(error) {
+  console.error('Error: ' + error);
 });
 
-server.listen(3000, () => {
-  console.log('Server listening on port 3000');
+// Close the socket when the client closes the connection
+serv.on('close', function() {
+  console.log('Connection closed');
 });
+
+serv.on('connection', () => {
+  console.log('user connected');  
+});
+
+serv.on('disconnection', () => {
+  console.log('user disconnected');  
+});
+
+serv.on('message', data => {
+  console.log('Received message from client:', data);
+  serv.emit('response', { message: 'Hello from the server!' });
+});
+
+serv.listen(port);
